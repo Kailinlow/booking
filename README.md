@@ -2,12 +2,20 @@
 
 A backend system for managing event ticket bookings with support for:
 
-- Concert management
-- Ticket category management
-- Voucher system
-- Concurrency-safe booking flow
-- Overselling prevention
-- Idempotency handling
+## Users:
+- Browse concerts
+- View ticket categories and prices
+- Reserve tickets
+- Apply promotional vouchers
+- Track booking status
+
+## Administrators:
+- Monitor bookings
+- Manage / publish new concert's ticket
+- Validate ticket availability
+- Manage voucher campaigns
+- Handle failed bookings
+- Update booking status manually when necessary
 
 Built with Java Spring Boot and PostgreSQL.
 
@@ -40,12 +48,13 @@ Built with Java Spring Boot and PostgreSQL.
 
 # Tech Stack
 
-- Java 21
+- Java 17
 - Spring Boot 3
 - Spring Data JPA
 - PostgreSQL
 - Maven
 - OpenAPI
+- Docker
 
 ---
 
@@ -104,50 +113,14 @@ Main entities:
 - Vouchers
 - Bookings
 
-Relationships:
+Database schema is provided in:
 
-- One concert can have multiple ticket categories
-- One voucher can be used by multiple bookings
-- One booking can purchase only one ticket category
+schema.sql
 
----
+Sample seed data is provided in:
 
-# API Endpoints
+data.sql
 
-## Concert APIs
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/v1/concerts` | Create concert |
-| GET | `/api/v1/concerts` | Get published concerts |
-| GET | `/api/v1/concerts/{id}` | Get concert detail |
-| PATCH | `/api/v1/concerts/{id}/publish` | Publish concert |
-
----
-
-## Ticket Category APIs
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/v1/ticket-categories` | Create ticket category |
-| GET | `/api/v1/ticket-categories/concert/{concertId}` | Get ticket categories by concert |
-
----
-
-## Voucher APIs
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/v1/vouchers` | Create voucher |
-
----
-
-## Booking APIs
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/v1/bookings` | Create booking |
-| GET | `/api/v1/bookings/{id}` | Get booking detail |
 
 ---
 
@@ -172,20 +145,13 @@ Booking flow implementation:
 Swagger UI:
 
 ```text
-/swagger-ui/index.html
+/api/v1/swagger-ui.html
 ```
 
 ---
 
 # Running the Project
 
-## Prerequisites
-
-- Java 21
-- PostgreSQL
-- Maven
-
----
 
 ## Clone project
 
@@ -195,20 +161,32 @@ git clone <repository-url>
 
 ---
 
-## Configure database
+## Environment Variables
 
-Update:
+Create a `.env` file in the project root:
 
-```properties
-src/main/resources/application.properties
+```env
+DB_URL=jdbc:postgresql://localhost:5432/ticket-booking
+DB_USERNAME=postgres
+DB_PASSWORD=1234
 ```
 
-Example:
+The application reads database configuration from environment variables.
+
+Example application.properties:
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/concert_booking
-spring.datasource.username=postgres
-spring.datasource.password=postgres
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+```
+
+---
+
+## Run PostgreSQL using Docker
+
+```bash
+docker-compose up -d
 ```
 
 ---
@@ -216,7 +194,23 @@ spring.datasource.password=postgres
 ## Run application
 
 ```bash
-./mvnw spring-boot:run
+mvn clean install 
+mvn spring-boot:run
+```
+---
+
+# Running with Docker
+
+## Build application
+
+```bash
+mvn clean package
+```
+
+## Start containers
+
+```bash
+docker-compose up --build
 ```
 
 ---
@@ -239,12 +233,170 @@ Body:
 
 ```json
 {
-  "userId": "550e8400-e29b-41d4-a716-446655440001",
   "ticketCategoryId": "550e8400-e29b-41d4-a716-446655440002",
   "quantity": 2,
   "voucherCode": "FLASH50"
 }
 ```
+
+---
+
+# Project Structure
+
+```text
+├── booking 
+├── concert 
+├── ticket 
+├── voucher 
+├── common 
+├── config 
+└── exception
+```
+
+---
+
+# Coding guideline & Convention
+
+## Project Structure
+
+The project follows feature-based modular structure:
+
+```text
+booking/
+concert/
+ticket/
+voucher/
+```
+
+Each module contains:
+
+- controller
+- service
+- repository
+- dto
+- entity
+- mapper
+
+---
+
+# Naming convention
+
+## Classes
+
+- PascalCase
+
+Example:
+```text
+BookingService
+ConcertController
+```
+
+## Variables
+
+- camelCase
+
+Example:
+```text
+ticketCategory
+startTime
+```
+
+## Constant
+
+- UPPER_CASE
+
+Example:
+```text
+MIN_USAGE
+QUANTITY_MIN
+```
+
+---
+
+# API Response Format
+
+All APIs return consistent response format using
+
+```text
+ApiResponse<T>
+```
+
+Example
+
+```json
+{
+  "status" : "Success",
+  "message" : "Created successfully",
+  "data" : {}
+}
+```
+
+---
+
+# Exception Handling
+
+Global exception handling is implemented using:
+
+```text
+GlobalExceptionHandler
+```
+
+---
+
+# Validation
+
+Request validation uses:
+
+```text
+jakarta.validation
+```
+
+Example
+
+```java
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+@NotNull
+@NotBlank
+```
+
+---
+
+# Testing
+
+Run tests:
+
+```bash
+mvn test
+```
+
+The project includes:
+
+* integration tests for concurrent booking scenarios
+
+
+---
+
+# Assumptions & Limitations
+
+## Assumptions
+
+* A booking can only purchase one ticket category at a time.
+* Booking creation is completed immediately without payment gateway integration.
+* Vouchers are assumed to be created and managed internally by the operation team.
+* Voucher updates and deletions are not supported in the current implementation.
+
+---
+
+## Limitations
+
+* Authentication and authorization are not implemented.
+* The system currently uses pessimistic locking, which may become a bottleneck under extremely high traffic.
+* Queue-based processing and distributed inventory management are not implemented.
+* Email/SMS notification handling is not supported.
+* Booking expiration and automatic cancellation are not implemented.
+
 
 ---
 
@@ -257,8 +409,8 @@ Potential future enhancements:
 - Booking expiration handling
 - Redis caching
 - Rate limiting
-- Event-driven architecture
-- Integration testing
+- Advanced integration testing
+- Queue-based booking architecture
 
 ---
 
