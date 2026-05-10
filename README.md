@@ -17,7 +17,7 @@ A backend system for managing event ticket bookings with support for:
 - Handle failed bookings
 - Update booking status manually when necessary
 
-Built with Java Spring Boot and PostgreSQL.
+Built with Java Spring Boot, PostgreSQL and Docker.
 
 ---
 
@@ -30,19 +30,18 @@ Built with Java Spring Boot and PostgreSQL.
 
 ## Ticket Category Management
 - Create ticket categories
-- Manage ticket inventory
-- Track remaining ticket quantity
+- View ticket category information by concert
 
 ## Voucher System
 - Create discount vouchers
-- Validate voucher expiration
-- Enforce voucher usage limits
+- View list vouchers
 
 ## Booking System
 - Create bookings
 - Prevent overselling during concurrent requests
 - Apply vouchers to bookings
 - Handle duplicate booking retries using idempotency keys
+- Handle approve or failed booking
 
 ---
 

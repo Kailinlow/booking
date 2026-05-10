@@ -3,9 +3,13 @@
 -- =====================================
 
 CREATE TABLE IF NOT EXISTS concerts (
+
     id UUID PRIMARY KEY,
+
     name VARCHAR(255) NOT NULL,
+
     start_time TIMESTAMP NOT NULL,
+
     status VARCHAR(50) NOT NULL
 );
 
@@ -14,6 +18,7 @@ CREATE TABLE IF NOT EXISTS concerts (
 -- =====================================
 
 CREATE TABLE IF NOT EXISTS ticket_categories (
+
     id UUID PRIMARY KEY,
 
     concert_id UUID NOT NULL,
@@ -36,6 +41,7 @@ CREATE TABLE IF NOT EXISTS ticket_categories (
 -- =====================================
 
 CREATE TABLE IF NOT EXISTS vouchers (
+
     id UUID PRIMARY KEY,
 
     code VARCHAR(100) NOT NULL UNIQUE,
@@ -54,9 +60,8 @@ CREATE TABLE IF NOT EXISTS vouchers (
 -- =====================================
 
 CREATE TABLE IF NOT EXISTS bookings (
-    id UUID PRIMARY KEY,
 
-    user_id UUID NOT NULL,
+    id UUID PRIMARY KEY,
 
     ticket_category_id UUID NOT NULL,
 
