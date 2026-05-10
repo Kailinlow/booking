@@ -25,7 +25,7 @@ public class ConcertController {
             summary = "Get All Publish Concert",
             description = "Browse all concerts that are currently set to 'Publish' status."
     )
-    @GetMapping
+    @GetMapping("/published")
     public ResponseEntity<ApiResponse<List<ConcertResponse>>> getPublishedConcerts() {
 
         List<ConcertResponse> concerts = concertService.getPublishedConcerts();
